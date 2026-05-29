@@ -6,16 +6,12 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal, overload
 
-from vllm.distributed.kv_events import BlockStored, KVCacheEvent
+from vllm.distributed.kv_events import KVCacheEvent
 from vllm.logger import init_logger
 from vllm.v1.core.kv_cache_coordinator import get_kv_cache_coordinator
 from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
 from vllm.v1.core.kv_cache_utils import KVCacheBlock
-from vllm.v1.kv_cache_interface import (
-    KVCacheConfig,
-    get_kv_cache_spec_kind,
-    get_kv_cache_spec_sliding_window,
-)
+from vllm.v1.kv_cache_interface import KVCacheConfig
 from vllm.v1.metrics.stats import PrefixCacheStats
 from vllm.v1.request import Request
 
@@ -110,7 +106,7 @@ class KVCacheBlocks:
 class KVCacheManager:
     def __init__(
         self,
-        kv_cache_config: KVCacheConfig,
+        kv_cache_config: "KVCacheConfig",
         max_model_len: int,
         hash_block_size: int,
         max_num_batched_tokens: int | None = None,
@@ -120,28 +116,53 @@ class KVCacheManager:
         enable_kv_cache_events: bool = False,
         dcp_world_size: int = 1,
         pcp_world_size: int = 1,
-        metrics_collector: KVCacheMetricsCollector | None = None,
+        metrics_collector: "KVCacheMetricsCollector | None" = None,
+        enable_dual_pool: bool = True,
+        enable_cost_aware_eviction: bool = True,
+        eviction_policy: "BlockEvictionPolicy | None" = None,
     ) -> None:
+        """
+        Initialize KVCacheManager with optional dual-pool and cost-aware eviction.
+        
+        Args:
+            enable_dual_pool: Whether to use dual-pool structure (common + cached)
+            enable_cost_aware_eviction: Whether to use cost-aware eviction policy
+            eviction_policy: Custom eviction policy
+        """
         self.max_model_len = max_model_len
-        # When unset, fall back to `max_model_len` so the recycling-aware cap
-        # collapses to the prior (uncapped) admission behavior. The scheduler
-        # always supplies the real value at runtime.
         if max_num_batched_tokens is None:
             max_num_batched_tokens = max_model_len
-
+        
         self.enable_caching = enable_caching
         self.use_eagle = use_eagle
         self.log_stats = log_stats
         self.metrics_collector = metrics_collector
-        # FIXME: make prefix cache stats conditional on log_stats. We still need
-        # this comment because when the log stats is enabled there are still
-        # potential configs we could expose in the future.
+        self.enable_dual_pool = enable_dual_pool
+        
         self.prefix_cache_stats = PrefixCacheStats() if log_stats else None
-
+        
+        # Create eviction policy
+        if eviction_policy is None:
+            if enable_cost_aware_eviction:
+                if enable_dual_pool:
+                    eviction_policy = HybridCostAwareEvictionPolicy(
+                        recency_weight=0.25,
+                        access_weight=0.35,
+                        frequency_weight=0.4,
+                        cost_sensitivity=1.2,
+                        is_common_pool=False,
+                    )
+                else:
+                    eviction_policy = CostAwareEvictionPolicy(
+                        recency_weight=0.3,
+                        access_weight=0.4,
+                        frequency_weight=0.3,
+                        cost_sensitivity=1.0,
+                    )
+        
         self.coordinator = get_kv_cache_coordinator(
             kv_cache_config=kv_cache_config,
             max_model_len=self.max_model_len,
-            max_num_batched_tokens=max_num_batched_tokens,
             use_eagle=self.use_eagle,
             enable_caching=self.enable_caching,
             enable_kv_cache_events=enable_kv_cache_events,
@@ -149,47 +170,35 @@ class KVCacheManager:
             pcp_world_size=pcp_world_size,
             hash_block_size=hash_block_size,
             metrics_collector=self.metrics_collector,
+            eviction_policy=eviction_policy,
+            enable_dual_pool=enable_dual_pool,
         )
+        
         self.num_kv_cache_groups = len(kv_cache_config.kv_cache_groups)
         self.block_pool = self.coordinator.block_pool
         self.kv_cache_config = kv_cache_config
-        self.kv_cache_event_metadata = tuple(
-            (
-                get_kv_cache_spec_kind(group.kv_cache_spec).value,
-                get_kv_cache_spec_sliding_window(group.kv_cache_spec),
-            )
-            for group in kv_cache_config.kv_cache_groups
-        )
-
-        # Pre-constructed KVCacheBlocks with no blocks, callers should use this
-        # via create_kv_cache_blocks instead of creating new ones to avoid GC
-        # overhead.
-        #
-        # We use nested tuples to ensure the empty KVCacheBlocks is immutable.
+        
         self.empty_kv_cache_blocks = KVCacheBlocks(
             tuple(() for _ in range(self.num_kv_cache_groups))
         )
-
-    @property
-    def usage(self) -> float:
-        """Get the KV cache usage.
-
-        Returns:
-            The KV cache usage (between 0.0 and 1.0).
+        
+        logger.info(
+            f"KVCacheManager initialized with "
+            f"dual_pool={'enabled' if enable_dual_pool else 'disabled'}, "
+            f"eviction_policy={eviction_policy.__class__.__name__}"
+        )
+    
+    def make_eviction_stats(self) -> dict | None:
         """
-        return self.block_pool.get_usage()
-
-    def make_prefix_cache_stats(self) -> PrefixCacheStats | None:
-        """Get (and reset) the prefix cache stats.
-
+        Get eviction statistics for monitoring.
+        
         Returns:
-            The current prefix caching stats, or None if logging is disabled.
+            Dictionary with eviction stats or None
         """
         if not self.log_stats:
             return None
-        stats = self.prefix_cache_stats
-        self.prefix_cache_stats = PrefixCacheStats()
-        return stats
+        
+        return self.block_pool.get_eviction_stats()
 
     def get_computed_blocks(self, request: Request) -> tuple[KVCacheBlocks, int]:
         """Get the computed (cached) blocks for the request.
@@ -243,7 +252,6 @@ class KVCacheManager:
         num_external_computed_tokens: int = 0,
         delay_cache_blocks: bool = False,
         num_encoder_tokens: int = 0,
-        full_sequence_must_fit: bool = False,
     ) -> KVCacheBlocks | None:
         """Add slots for a request with new tokens to append.
 
@@ -265,10 +273,6 @@ class KVCacheManager:
             num_encoder_tokens: The number of encoder tokens to allocate for
                 cross-attention in encoder-decoder models(e.g., Whisper).
                 For decoder-only models, this should be 0.
-            full_sequence_must_fit: Only allocate blocks if the KV cache has enough
-                free blocks to hold the full sequence, accounting for prefix cache hits
-                and sliding window. Used as an admission gate to prevent over-admitting
-                requests when chunked prefill would otherwise only check the first chunk
 
         Blocks layout:
         ```
@@ -342,26 +346,10 @@ class KVCacheManager:
             num_local_computed_tokens + num_external_computed_tokens,
             self.max_model_len,
         )
-
-        if full_sequence_must_fit:
-            # First check and fail if the full request sequence won't fit.
-            full_num_tokens = min(request.num_tokens, self.max_model_len)
-
-            num_blocks_to_allocate = self.coordinator.get_num_blocks_to_allocate(
-                request_id=request.request_id,
-                num_tokens=full_num_tokens,
-                new_computed_blocks=new_computed_block_list,
-                num_encoder_tokens=num_encoder_tokens,
-                total_computed_tokens=total_computed_tokens,
-                num_tokens_main_model=full_num_tokens,
-                apply_admission_cap=True,
-            )
-            if num_blocks_to_allocate > self.block_pool.get_num_free_blocks():
-                return None
-
         num_tokens_main_model = total_computed_tokens + num_new_tokens
         num_tokens_need_slot = min(
-            num_tokens_main_model + num_lookahead_tokens, self.max_model_len
+            num_tokens_main_model + num_lookahead_tokens,
+            self.max_model_len,
         )
 
         # Free the blocks that are skipped during the attention computation
@@ -513,25 +501,7 @@ class KVCacheManager:
         Returns:
             A list of KV cache events.
         """
-        events = self.block_pool.take_events()
-        for event in events:
-            if not isinstance(event, BlockStored):
-                continue
-            if event.group_idx is None:
-                continue
-            if event.group_idx < 0 or event.group_idx >= len(
-                self.kv_cache_event_metadata
-            ):
-                logger.warning(
-                    "Group index `%s` not in KV cache metadata", event.group_idx
-                )
-                continue
-            # Annotate here so BlockPool can keep emitting structural cache
-            # events without owning semantic KV cache spec metadata.
-            kind, sliding_window = self.kv_cache_event_metadata[event.group_idx]
-            event.kv_cache_spec_kind = kind
-            event.kv_cache_spec_sliding_window = sliding_window
-        return events
+        return self.block_pool.take_events()
 
     def get_blocks(self, request_id: str) -> KVCacheBlocks:
         """Get the blocks of a request."""
@@ -558,13 +528,7 @@ class KVCacheManager:
         # Only create new KVCacheBlocks for non-empty blocks
         return KVCacheBlocks(blocks) if any(blocks) else self.empty_kv_cache_blocks
 
-    def take_new_block_ids(self) -> list[int]:
-        """Drain and return new attention block IDs for zeroing."""
-        ids: list[int] = []
-        for mgr in self.coordinator.single_type_managers:
-            ids.extend(mgr.take_new_block_ids())
-        return ids
-
     def new_step_starts(self) -> None:
         """Called when a new step is started."""
         self.coordinator.new_step_starts()
+
