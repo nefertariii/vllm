@@ -267,6 +267,19 @@ class KVCacheCoordinator(ABC):
     ) -> tuple[tuple[list[KVCacheBlock], ...], int]:
         pass
 
+    def estimate_prefix_hit_tokens(self, request: Request) -> int:
+        """Estimate cached token count for scheduling. Read-only: no side
+        effects on ref counts or block state."""
+        if not self.enable_caching:
+            return 0
+        max_cache_hit_length = request.num_tokens - 1
+        if max_cache_hit_length <= 0:
+            return 0
+        _, num_hit_tokens = self.find_longest_cache_hit(
+            request.block_hashes, max_cache_hit_length
+        )
+        return num_hit_tokens
+
     def new_step_starts(self) -> None:
         """Called when a new step is started."""
         for manager in self.single_type_managers:
@@ -319,6 +332,9 @@ class KVCacheCoordinatorNoPrefixCache(KVCacheCoordinator):
             [] for _ in range(self.num_single_type_manager)
         )
         return blocks, 0
+
+    def estimate_prefix_hit_tokens(self, request: Request) -> int:
+        return 0
 
 
 class UnitaryKVCacheCoordinator(KVCacheCoordinator):

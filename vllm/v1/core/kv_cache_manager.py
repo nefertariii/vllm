@@ -191,6 +191,10 @@ class KVCacheManager:
         self.prefix_cache_stats = PrefixCacheStats()
         return stats
 
+    def estimate_prefix_hit_tokens(self, request: Request) -> int:
+        """Estimate cached token count for scheduling priority. Read-only."""
+        return self.coordinator.estimate_prefix_hit_tokens(request)
+
     def get_computed_blocks(self, request: Request) -> tuple[KVCacheBlocks, int]:
         """Get the computed (cached) blocks for the request.
         Note that the computed blocks must be full.

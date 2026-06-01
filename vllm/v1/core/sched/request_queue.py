@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 
 import heapq
+import time
 from abc import ABC, abstractmethod
 from collections import deque
 from collections.abc import Iterable, Iterator
@@ -196,6 +197,74 @@ class PriorityRequestQueue(RequestQueue):
         heap_copy = self._heap[:]
         while heap_copy:
             yield heapq.heappop(heap_copy)
+
+
+class PrefixAwareRequestQueue(RequestQueue):
+    """Waiting queue that schedules requests with more prefix cache hits first.
+
+    Anti-starvation: any request waiting >= max_wait_seconds is promoted to
+    the front regardless of its prefix hit score.
+
+    Sort key: (0 if stale else 1, -num_prefix_hit_tokens, enqueue_time)
+    Re-sorted lazily — only when a new request is enqueued, so the hot path
+    through schedule() is O(1) per peek/pop after the first sort.
+    """
+
+    def __init__(self, max_wait_seconds: float = 5.0) -> None:
+        self._queue: list[Request] = []
+        self.max_wait_seconds = max_wait_seconds
+        self._is_sorted: bool = True
+
+    def _sort(self) -> None:
+        if self._is_sorted:
+            return
+        now = time.monotonic()
+
+        def sort_key(r: Request) -> tuple:
+            is_stale = (now - r.enqueue_time) >= self.max_wait_seconds
+            return (0 if is_stale else 1, -r.num_prefix_hit_tokens, r.enqueue_time)
+
+        self._queue.sort(key=sort_key)
+        self._is_sorted = True
+
+    def add_request(self, request: Request) -> None:
+        self._queue.append(request)
+        self._is_sorted = False
+
+    def pop_request(self) -> Request:
+        self._sort()
+        return self._queue.pop(0)
+
+    def peek_request(self) -> Request:
+        self._sort()
+        return self._queue[0]
+
+    def prepend_request(self, request: Request) -> None:
+        self._queue.append(request)
+        self._is_sorted = False
+
+    def prepend_requests(self, requests: "RequestQueue") -> None:
+        for r in requests:
+            self._queue.append(r)
+        if self._queue:
+            self._is_sorted = False
+
+    def remove_request(self, request: Request) -> None:
+        self._queue.remove(request)
+
+    def remove_requests(self, requests: Iterable[Request]) -> None:
+        to_remove = requests if isinstance(requests, set) else set(requests)
+        self._queue = [r for r in self._queue if r not in to_remove]
+
+    def __bool__(self) -> bool:
+        return bool(self._queue)
+
+    def __len__(self) -> int:
+        return len(self._queue)
+
+    def __iter__(self) -> Iterator[Request]:
+        self._sort()
+        return iter(list(self._queue))
 
 
 def create_request_queue(policy: SchedulingPolicy) -> RequestQueue:

@@ -43,6 +43,7 @@ from vllm.v1.core.sched.output import (
     SchedulerOutput,
 )
 from vllm.v1.core.sched.request_queue import (
+    PrefixAwareRequestQueue,
     RequestQueue,
     SchedulingPolicy,
     create_request_queue,
@@ -161,7 +162,14 @@ class Scheduler(SchedulerInterface):
                 f"Unknown scheduling policy: {self.scheduler_config.policy}"
             ) from e
         # Priority queues for requests.
-        self.waiting = create_request_queue(self.policy)
+        if self.scheduler_config.enable_prefix_aware_scheduling:
+            self.waiting: RequestQueue = PrefixAwareRequestQueue(
+                max_wait_seconds=(
+                    self.scheduler_config.prefix_scheduling_max_wait_seconds
+                )
+            )
+        else:
+            self.waiting = create_request_queue(self.policy)
         # requests skipped in waiting flow due async deps or constraints.
         self.skipped_waiting = create_request_queue(self.policy)
         self.running: list[Request] = []
@@ -1769,6 +1777,11 @@ class Scheduler(SchedulerInterface):
         else:
             if request.resumable:
                 request.streaming_queue = deque()
+            if self.scheduler_config.enable_prefix_aware_scheduling:
+                request.num_prefix_hit_tokens = (
+                    self.kv_cache_manager.estimate_prefix_hit_tokens(request)
+                )
+                request.enqueue_time = time.monotonic()
             self._enqueue_waiting_request(request)
             self.requests[request.request_id] = request
             if self.connector is not None:
