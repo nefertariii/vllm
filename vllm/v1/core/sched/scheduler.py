@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 import itertools
+import os
 import time
 from collections import defaultdict, deque
 from collections.abc import Iterable
@@ -227,6 +228,11 @@ class Scheduler(SchedulerInterface):
             max_model_len=self.max_model_len,
             max_num_batched_tokens=self.scheduler_config.max_num_batched_tokens,
             enable_caching=self.cache_config.enable_prefix_caching,
+            enable_dual_pool=self.cache_config.enable_dual_pool,
+            enable_cost_scoring=self.cache_config.enable_cost_scoring,
+            enable_adaptive_scoring=self.cache_config.enable_adaptive_scoring,
+            num_params_B=self.cache_config.num_params_B,
+            eviction_w_cost=self.cache_config.eviction_w_cost,
             use_eagle=self.use_eagle,
             log_stats=self.log_stats,
             enable_kv_cache_events=self.enable_kv_cache_events,
@@ -544,6 +550,13 @@ class Scheduler(SchedulerInterface):
         # Next, schedule the WAITING requests.
         if not preempted_reqs and self._pause_state == PauseState.UNPAUSED:
             step_skipped_waiting = create_request_queue(self.policy)
+
+            # Refresh prefix-aware eviction protection before processing the
+            # waiting queue.  This marks free blocks that are cached prefixes
+            # of pending requests so the eviction policy avoids evicting them.
+            # Disabled by setting VLLM_PREFIX_AWARE_EVICTION=0.
+            if os.environ.get("VLLM_PREFIX_AWARE_EVICTION", "1") == "1":
+                self.kv_cache_manager.refresh_protected_blocks(self.waiting)
 
             while (self.waiting or self.skipped_waiting) and token_budget > 0:
                 if len(self.running) == self.max_num_running_reqs:

@@ -90,6 +90,33 @@ class CacheConfig:
     `ModelConfig` and that value should be manually duplicated here."""
     enable_prefix_caching: bool = True
     """Whether to enable prefix caching."""
+    enable_dual_pool: bool = True
+    """Whether to promote frequently-reused blocks to a protected common pool
+    (Jenga-style). Blocks with access_count >= common_pool_min_access are
+    shielded from direct eviction. Independent of enable_cost_scoring."""
+    enable_cost_scoring: bool = True
+    """Whether to use composite LRU+LFU+cost eviction scoring instead of pure
+    LRU. When True, blocks belonging to long (expensive) request chains are
+    evicted last, even before their first cache hit. Independent of
+    enable_dual_pool."""
+    enable_adaptive_scoring: bool = True
+    """Whether to adjust eviction-score weights dynamically at runtime.
+    When True (and enable_cost_scoring=True), w_cost is scaled by four
+    signals: cache fill ratio, cost coefficient of variation, GPU capacity
+    (total_blocks), and model size (num_params_B). Reduces w_cost when the
+    cache is large or costs are homogeneous, preventing cost scoring from
+    hurting workloads where it adds no signal."""
+    num_params_B: float = 8.0
+    """Approximate model parameter count in billions. Used by adaptive scoring
+    to scale the cost weight: larger models have more expensive KV
+    recomputation, so their long prefix chains are worth retaining longer.
+    Examples: 9.0 for Gemma-2-9b, 8.0 for Llama-3.1-8B, 12.0 for
+    Gemma-3-12b."""
+    eviction_w_cost: float = 0.3
+    """Weight of the chain-cost component in the eviction score formula:
+    score = -w_lru*recency + w_lfu*lfu + w_cost*cost
+    Set to 0.0 to use LRU+LFU scoring without cost (requires
+    enable_cost_scoring=True to activate the O(n) scan path)."""
     prefix_caching_hash_algo: PrefixCachingHashAlgo = "sha256"
     """Set the hash algorithm for prefix caching:
 

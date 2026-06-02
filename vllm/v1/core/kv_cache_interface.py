@@ -6,8 +6,8 @@ class EvictionPolicyConfig:
     
     policy_type: str = "cost_aware"  # "lru", "lfu", "cost_aware", "hybrid"
     recency_weight: float = 0.3
-    access_weight: float = 0.4
-    frequency_weight: float = 0.3
+    frequency_weight: float = 0.4
+    cost_weight: float = 0.3
     cost_sensitivity: float = 1.0
     min_idle_time: float = 0.1
     enable_dual_pool: bool = True

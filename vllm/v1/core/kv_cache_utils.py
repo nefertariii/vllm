@@ -132,6 +132,23 @@ class KVCacheBlock:
     # Whether the block is a null block that should never be cached.
     is_null: bool = False
 
+    # LFU: number of times this block has been reused via prefix caching.
+    # Incremented by BlockPool.touch(). Used to identify "hot" blocks.
+    access_count: int = 0
+
+    # Cost: total number of blocks in the owning request's chain when freed.
+    # chain_total_blocks * block_size = tokens that must be recomputed if evicted.
+    # Set by SingleTypeKVCacheManager.free() before calling block_pool.free_blocks().
+    chain_total_blocks: int = 0
+
+    # LRU: monotonic timestamp (ns) of the last access via touch().
+    # 0 means the block has never been accessed (fresh/unallocated).
+    last_access_time_ns: int = 0
+
+    # Dual pool: True if this block currently resides in the common pool
+    # (protected from eviction). False if in the cached pool (evictable).
+    in_common_pool: bool = False
+
     @property
     def block_hash(self) -> BlockHashWithGroupId | None:
         return self._block_hash
@@ -2147,3 +2164,4 @@ class BlockHashListWithBlockSize:
 
 
 BlockHashList = list[BlockHash] | BlockHashListWithBlockSize
+

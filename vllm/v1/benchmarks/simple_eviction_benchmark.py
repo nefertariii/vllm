@@ -12,18 +12,19 @@ from vllm.logger import init_logger
 
 logger = init_logger(__name__)
 
-
 @dataclass
 class SimpleMetrics:
     """簡化版的指標。"""
     policy_name: str
+    workload_type: str = ""
+    num_blocks: int = 0
+    unique_prefixes: int = 0
     cache_hit_rate: float = 0.0
     cache_miss_rate: float = 0.0
     total_evictions: int = 0
     avg_evicted_tokens: float = 0.0
     total_recompute_tokens: int = 0
     total_time_seconds: float = 0.0
-
 
 class SimpleEvictionBenchmark:
     """
@@ -316,11 +317,20 @@ class SimpleEvictionBenchmark:
             # 測試 LRU（原版）
             logger.info("Running LRU (Original)...")
             lru_metrics = self.simulate_lru(requests)
-            all_results.append(lru_metrics)
             
             # 測試 Cost-Aware + Dual-Pool（新版）
             logger.info("Running Cost-Aware + Dual-Pool (New)...")
             cost_aware_metrics = self.simulate_cost_aware_dual_pool(requests)
+            unique_prefixes = len(set(r["prefix_id"] for r in requests))
+
+            lru_metrics.workload_type = workload
+            lru_metrics.num_blocks = self.num_blocks
+            lru_metrics.unique_prefixes = unique_prefixes
+
+            cost_aware_metrics.workload_type = workload
+            cost_aware_metrics.num_blocks = self.num_blocks
+            cost_aware_metrics.unique_prefixes = unique_prefixes
+            all_results.append(lru_metrics)
             all_results.append(cost_aware_metrics)
             
             # 列印對比結果
@@ -399,7 +409,7 @@ def main():
     logger.info("Starting Eviction Policy Benchmark...")
     logger.info(f"Timestamp: {datetime.now().isoformat()}")
     
-    benchmark = SimpleEvictionBenchmark(num_blocks=1000)
+    benchmark = SimpleEvictionBenchmark(num_blocks=100)
     results = benchmark.run_comparison()
     
     # 導出結果到 JSON

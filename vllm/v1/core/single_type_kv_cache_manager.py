@@ -237,7 +237,11 @@ class SingleTypeKVCacheManager(ABC):
                 cdiv(num_total_computed_tokens, self.block_size) - len(req_blocks)
             )
             req_blocks.extend(allocated_blocks)
-            if type(self.kv_cache_spec) in (FullAttentionSpec, TQFullAttentionSpec):
+            if type(self.kv_cache_spec) in (
+                FullAttentionSpec,
+                TQFullAttentionSpec,
+                MLAAttentionSpec,
+            ):
                 self.new_block_ids.extend(b.block_id for b in allocated_blocks)
 
     def allocate_new_blocks(
@@ -265,7 +269,11 @@ class SingleTypeKVCacheManager(ABC):
         else:
             new_blocks = self.block_pool.get_new_blocks(num_new_blocks)
             req_blocks.extend(new_blocks)
-            if type(self.kv_cache_spec) in (FullAttentionSpec, TQFullAttentionSpec):
+            if type(self.kv_cache_spec) in (
+                FullAttentionSpec,
+                TQFullAttentionSpec,
+                MLAAttentionSpec,
+            ):
                 self.new_block_ids.extend(b.block_id for b in new_blocks)
             return new_blocks
 
@@ -344,6 +352,12 @@ class SingleTypeKVCacheManager(ABC):
         """
         # Default to [] in case a request is freed (aborted) before alloc.
         req_blocks = self.req_to_blocks.pop(request_id, [])
+
+        # Annotate every block with the total chain length so that
+        # BlockPool._compute_eviction_score() can use the cost component.
+        chain_len = len(req_blocks)
+        for block in req_blocks:
+            block.chain_total_blocks = chain_len
 
         # Free blocks in reverse order so that the tail blocks are
         # freed first.
@@ -1230,3 +1244,4 @@ def get_manager_for_kv_cache_spec(
         )
     manager = manager_class(kv_cache_spec, **kwargs)
     return manager
+

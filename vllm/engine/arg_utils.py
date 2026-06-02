@@ -503,6 +503,11 @@ class EngineArgs:
     )
     block_size: int | None = None
     enable_prefix_caching: bool | None = None
+    enable_dual_pool: bool = CacheConfig.enable_dual_pool
+    enable_cost_scoring: bool = CacheConfig.enable_cost_scoring
+    enable_adaptive_scoring: bool = CacheConfig.enable_adaptive_scoring
+    num_params_B: float = CacheConfig.num_params_B
+    eviction_w_cost: float = CacheConfig.eviction_w_cost
     prefix_caching_hash_algo: PrefixCachingHashAlgo = (
         CacheConfig.prefix_caching_hash_algo
     )
@@ -1138,6 +1143,21 @@ class EngineArgs:
             },
         )
         cache_group.add_argument(
+            "--enable-dual-pool", **cache_kwargs["enable_dual_pool"]
+        )
+        cache_group.add_argument(
+            "--enable-cost-scoring", **cache_kwargs["enable_cost_scoring"]
+        )
+        cache_group.add_argument(
+            "--enable-adaptive-scoring", **cache_kwargs["enable_adaptive_scoring"]
+        )
+        cache_group.add_argument(
+            "--num-params-b", **cache_kwargs["num_params_B"]
+        )
+        cache_group.add_argument(
+            "--eviction-w-cost", **cache_kwargs["eviction_w_cost"]
+        )
+        cache_group.add_argument(
             "--prefix-caching-hash-algo", **cache_kwargs["prefix_caching_hash_algo"]
         )
         cache_group.add_argument(
@@ -1765,6 +1785,11 @@ class EngineArgs:
             num_gpu_blocks_override=self.num_gpu_blocks_override,
             sliding_window=sliding_window,
             enable_prefix_caching=self.enable_prefix_caching,
+            enable_dual_pool=self.enable_dual_pool,
+            enable_cost_scoring=self.enable_cost_scoring,
+            enable_adaptive_scoring=self.enable_adaptive_scoring,
+            num_params_B=self.num_params_B,
+            eviction_w_cost=self.eviction_w_cost,
             prefix_caching_hash_algo=self.prefix_caching_hash_algo,
             calculate_kv_scales=self.calculate_kv_scales,
             kv_cache_dtype_skip_layers=self.kv_cache_dtype_skip_layers,

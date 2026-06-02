@@ -94,3 +94,4 @@ class KVCacheMetricsCollector:
         events = self._eviction_events
         self._eviction_events = []
         return events
+

@@ -37,11 +37,16 @@ class KVCacheCoordinator(ABC):
         max_num_batched_tokens: int,
         use_eagle: bool,
         enable_caching: bool,
+        enable_dual_pool: bool,
+        enable_cost_scoring: bool,
         enable_kv_cache_events: bool,
         dcp_world_size: int,
         pcp_world_size: int,
         hash_block_size: int,
         metrics_collector: KVCacheMetricsCollector | None = None,
+        enable_adaptive_scoring: bool = True,
+        num_params_B: float = 8.0,
+        eviction_w_cost: float = 0.3,
     ):
         self.kv_cache_config = kv_cache_config
         self.max_model_len = max_model_len
@@ -53,6 +58,11 @@ class KVCacheCoordinator(ABC):
             hash_block_size=hash_block_size,
             enable_kv_cache_events=enable_kv_cache_events,
             metrics_collector=metrics_collector,
+            enable_dual_pool=enable_dual_pool,
+            enable_cost_scoring=enable_cost_scoring,
+            enable_adaptive_scoring=enable_adaptive_scoring,
+            num_params_B=num_params_B,
+            w_cost=eviction_w_cost,
         )
 
         # KV cache group indices that get the EAGLE last-block drop.
@@ -299,11 +309,15 @@ class KVCacheCoordinatorNoPrefixCache(KVCacheCoordinator):
             max_num_batched_tokens,
             use_eagle,
             False,
+            False,  # enable_dual_pool: irrelevant when caching is disabled
+            False,  # enable_cost_scoring: irrelevant when caching is disabled
             enable_kv_cache_events,
             dcp_world_size=dcp_world_size,
             pcp_world_size=pcp_world_size,
             hash_block_size=hash_block_size,
             metrics_collector=metrics_collector,
+            enable_adaptive_scoring=False,
+            eviction_w_cost=0.3,
         )
         self.num_single_type_manager = len(self.single_type_managers)
 
@@ -335,11 +349,16 @@ class UnitaryKVCacheCoordinator(KVCacheCoordinator):
         max_num_batched_tokens: int,
         use_eagle: bool,
         enable_caching: bool,
+        enable_dual_pool: bool,
+        enable_cost_scoring: bool,
         enable_kv_cache_events: bool,
         dcp_world_size: int,
         pcp_world_size: int,
         hash_block_size: int,
         metrics_collector: KVCacheMetricsCollector | None = None,
+        enable_adaptive_scoring: bool = True,
+        num_params_B: float = 8.0,
+        eviction_w_cost: float = 0.3,
     ):
         super().__init__(
             kv_cache_config,
@@ -347,11 +366,16 @@ class UnitaryKVCacheCoordinator(KVCacheCoordinator):
             max_num_batched_tokens,
             use_eagle,
             enable_caching,
+            enable_dual_pool,
+            enable_cost_scoring,
             enable_kv_cache_events,
             dcp_world_size=dcp_world_size,
             pcp_world_size=pcp_world_size,
             hash_block_size=hash_block_size,
             metrics_collector=metrics_collector,
+            enable_adaptive_scoring=enable_adaptive_scoring,
+            num_params_B=num_params_B,
+            eviction_w_cost=eviction_w_cost,
         )
         self.kv_cache_spec = self.kv_cache_config.kv_cache_groups[0].kv_cache_spec
         self.block_size = self.kv_cache_spec.block_size
@@ -402,11 +426,16 @@ class HybridKVCacheCoordinator(KVCacheCoordinator):
         max_num_batched_tokens: int,
         use_eagle: bool,
         enable_caching: bool,
+        enable_dual_pool: bool,
+        enable_cost_scoring: bool,
         enable_kv_cache_events: bool,
         dcp_world_size: int,
         pcp_world_size: int,
         hash_block_size: int,
         metrics_collector: KVCacheMetricsCollector | None = None,
+        enable_adaptive_scoring: bool = True,
+        num_params_B: float = 8.0,
+        eviction_w_cost: float = 0.3,
     ):
         super().__init__(
             kv_cache_config,
@@ -414,11 +443,16 @@ class HybridKVCacheCoordinator(KVCacheCoordinator):
             max_num_batched_tokens,
             use_eagle,
             enable_caching,
+            enable_dual_pool,
+            enable_cost_scoring,
             enable_kv_cache_events,
             dcp_world_size=dcp_world_size,
             pcp_world_size=pcp_world_size,
             hash_block_size=hash_block_size,
             metrics_collector=metrics_collector,
+            enable_adaptive_scoring=enable_adaptive_scoring,
+            num_params_B=num_params_B,
+            eviction_w_cost=eviction_w_cost,
         )
         # hash_block_size: the block size used to compute block hashes.
         # The actual block size usually equals hash_block_size, but in cases where
@@ -613,11 +647,16 @@ def get_kv_cache_coordinator(
     max_num_batched_tokens: int,
     use_eagle: bool,
     enable_caching: bool,
+    enable_dual_pool: bool,
+    enable_cost_scoring: bool,
     enable_kv_cache_events: bool,
     dcp_world_size: int,
     pcp_world_size: int,
     hash_block_size: int,
     metrics_collector: KVCacheMetricsCollector | None = None,
+    enable_adaptive_scoring: bool = True,
+    num_params_B: float = 8.0,
+    eviction_w_cost: float = 0.3,
 ) -> KVCacheCoordinator:
     if not enable_caching:
         return KVCacheCoordinatorNoPrefixCache(
@@ -638,11 +677,16 @@ def get_kv_cache_coordinator(
             max_num_batched_tokens,
             use_eagle,
             enable_caching,
+            enable_dual_pool,
+            enable_cost_scoring,
             enable_kv_cache_events,
             dcp_world_size=dcp_world_size,
             pcp_world_size=pcp_world_size,
             hash_block_size=hash_block_size,
             metrics_collector=metrics_collector,
+            enable_adaptive_scoring=enable_adaptive_scoring,
+            num_params_B=num_params_B,
+            eviction_w_cost=eviction_w_cost,
         )
     return HybridKVCacheCoordinator(
         kv_cache_config,
@@ -650,9 +694,14 @@ def get_kv_cache_coordinator(
         max_num_batched_tokens,
         use_eagle,
         enable_caching,
+        enable_dual_pool,
+        enable_cost_scoring,
         enable_kv_cache_events,
         dcp_world_size=dcp_world_size,
         pcp_world_size=pcp_world_size,
         hash_block_size=hash_block_size,
         metrics_collector=metrics_collector,
+        enable_adaptive_scoring=enable_adaptive_scoring,
+        num_params_B=num_params_B,
     )
+
