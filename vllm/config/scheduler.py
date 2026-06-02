@@ -154,6 +154,17 @@ class SchedulerConfig:
     while a larger value (e.g., 10) reduces host overhead and may increase throughput
     by batching multiple tokens before sending."""
 
+    enable_prefix_aware_scheduling: bool = False
+    """If True, requests with more prefix cache hits are scheduled before requests
+    with fewer hits. This maximizes KV cache utilization and reduces recomputation.
+    Starvation is prevented via prefix_scheduling_max_wait_seconds.
+    Has no effect when policy is "priority"."""
+
+    prefix_scheduling_max_wait_seconds: float = Field(default=5.0, ge=0.0)
+    """Maximum time (seconds) a request may wait in the prefix-aware queue before
+    being promoted to the front regardless of its prefix hit score.
+    Only used when enable_prefix_aware_scheduling is True."""
+
     @staticmethod
     def default_factory(**kwargs):
         """

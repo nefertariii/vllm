@@ -175,6 +175,11 @@ class Request:
         self._block_hasher: Callable[[Request], list[BlockHash]] | None = block_hasher
         self.update_block_hashes()
 
+        # Prefix-aware scheduling fields. Set by the scheduler on arrival.
+        # -1 means not yet estimated.
+        self.num_prefix_hit_tokens: int = -1
+        self.enqueue_time: float = 0.0
+
         self.skip_reading_prefix_cache = self.get_skip_reading_prefix_cache()
 
         # Used for streaming

@@ -701,6 +701,14 @@ class EngineArgs:
 
     stream_interval: int = SchedulerConfig.stream_interval
 
+    enable_prefix_aware_scheduling: bool = (
+        SchedulerConfig.enable_prefix_aware_scheduling
+    )
+
+    prefix_scheduling_max_wait_seconds: float = (
+        SchedulerConfig.prefix_scheduling_max_wait_seconds
+    )
+
     kv_sharing_fast_prefill: bool = CacheConfig.kv_sharing_fast_prefill
     optimization_level: OptimizationLevel = VllmConfig.optimization_level
     performance_mode: PerformanceMode = VllmConfig.performance_mode
@@ -1438,6 +1446,14 @@ class EngineArgs:
         scheduler_group.add_argument(
             "--stream-interval", **scheduler_kwargs["stream_interval"]
         )
+        scheduler_group.add_argument(
+            "--enable-prefix-aware-scheduling",
+            **scheduler_kwargs["enable_prefix_aware_scheduling"],
+        )
+        scheduler_group.add_argument(
+            "--prefix-scheduling-max-wait-seconds",
+            **scheduler_kwargs["prefix_scheduling_max_wait_seconds"],
+        )
 
         # Compilation arguments
         compilation_kwargs = get_kwargs(CompilationConfig)
@@ -2073,6 +2089,8 @@ class EngineArgs:
             disable_hybrid_kv_cache_manager=self.disable_hybrid_kv_cache_manager,
             async_scheduling=self.async_scheduling,
             stream_interval=self.stream_interval,
+            enable_prefix_aware_scheduling=self.enable_prefix_aware_scheduling,
+            prefix_scheduling_max_wait_seconds=self.prefix_scheduling_max_wait_seconds,
         )
 
         if not model_config.is_multimodal_model and self.default_mm_loras:

@@ -247,5 +247,13 @@ vllm/grpc/vllm_engine_pb2.py
 vllm/grpc/vllm_engine_pb2_grpc.py
 vllm/grpc/vllm_engine_pb2.pyi
 
-# Ignore generated cpu headers 
+# Ignore generated cpu headers
 csrc/cpu/cpu_attn_dispatch_generated.h
+
+# Prefix-aware scheduling: task planning docs, experiment data, outdated scripts
+TASK_*.md
+results/
+benchmark_data/
+scripts/run_figure17.sh
+scripts/analyze_figure17.py
+scripts/run_benchmark_arxiv.sh
