@@ -489,6 +489,26 @@ class KVCacheManager:
         if not self.enable_caching:
             return
 
+        # Skip protection when pool is too small to hold multiple requests
+        # simultaneously — protecting blocks only helps when there is enough
+        # capacity for several articles to coexist.  Threshold: pool must fit
+        # at least MIN_POOL_RATIO typical requests; below that, any eviction
+        # will clear entire articles regardless of what we protect.
+        _MIN_POOL_RATIO = 2.0
+        _total_blocks = self.block_pool.num_gpu_blocks - 1  # exclude null
+        _tokens_per_block = max(1, self.block_pool.hash_block_size)
+        _sample_n = _sample_tokens = 0
+        for _req in waiting_requests:
+            if _sample_n >= 5:
+                break
+            _sample_tokens += _req.num_tokens
+            _sample_n += 1
+        if _sample_n > 0:
+            _avg_req_blocks = (_sample_tokens / _sample_n) / _tokens_per_block
+            if _avg_req_blocks > 0 and _total_blocks / _avg_req_blocks < _MIN_POOL_RATIO:
+                self.block_pool.protected_block_ids = set()
+                return
+
         protected: set[int] = set()
         # Cap protection at 50% of free blocks so eviction always has candidates.
         # Without this, large articles (e.g. 90k tokens = 5600 blocks) can fill

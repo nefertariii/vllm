@@ -1,5 +1,5 @@
 #!/bin/bash
-# 4-policy benchmark — Gemma-3-4B-IT on A5000 (combined-prefix-aware branch)
+# 4-policy benchmark — Llama-3.1-8B-Instruct + MMLU-pro on A5000 (combined-prefix-aware branch)
 #
 # Policies:
 #   LRU          eviction=LRU,  sched=FCFS
@@ -7,14 +7,15 @@
 #   SchedAware   eviction=LRU,  sched=PA     (--enable-prefix-aware-scheduling)
 #   Both         eviction=PA,   sched=PA
 #
-# Jenga SOSP'25 AE config:
-#   dataset: liyucheng/arxiv-march-2023, subset=ministral
-#   10 articles × 4 questions = 40 prompts, shuffled seed=55555
-#   hf_max_len=90000, hf_output_len=150, rate=inf, ignore-eos
+# Dataset: MMLU-pro (meta-llama/Llama-3.1-405B-evals)
+#   40 prompts, max_model_len=4096, hf_output_len=20, seed=55555, ignore-eos
+#
+# NOTE: MMLU prompts are independent (no shared prefix) → expect all policies ≈ LRU.
+#       This is a control/baseline experiment for the combined-prefix-aware branch.
 #
 # Usage:
-#   tmux new-session -d -s bench_gemma_combined \
-#     "bash run_gemma3_4b_combined_benchmark.sh 2>&1 | tee bench_gemma_combined.log"
+#   tmux new-session -d -s bench_llama_mmlu \
+#     "bash run_llama_8b_mmlu_combined_benchmark.sh 2>&1 | tee bench_llama_mmlu.log"
 
 set -e
 cd /home/r14922173/vllm
@@ -28,26 +29,30 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export HF_HOME=/home/r14922173/vllm_work/cache/huggingface
 
 PYTHON=/home/r14922173/vllm_work/envs/vllm-src-py312/bin/python
-OUTDIR=results_arxiv/gemma3_4b_combined
-PORT=8768
-MODEL=google/gemma-3-4b-it
+OUTDIR=results_arxiv/llama_8b_mmlu_combined
+PORT=8767
+MODEL=meta-llama/Llama-3.1-8B-Instruct
+MAX_MODEL_LEN=4096
+HF_MAX_LEN=3946          # 4096 - 150 output tokens
+HF_OUTPUT_LEN=20
 NUM_PROMPTS=40
 
 mkdir -p "$OUTDIR"
 TS=$(date +%Y%m%d_%H%M%S)
 LOG=$OUTDIR/bench_${TS}.log
 
-echo "=== 4-policy benchmark — Gemma-3-4B-IT (combined branch) ===" | tee "$LOG"
-echo "Start  : $(date)" | tee -a "$LOG"
-echo "GPU    : $(nvidia-smi -i 0 --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null)" | tee -a "$LOG"
-echo "Branch : $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)" | tee -a "$LOG"
+echo "=== 4-policy benchmark — Llama-3.1-8B-Instruct + MMLU-pro (combined branch) ===" | tee "$LOG"
+echo "Start         : $(date)"                                                            | tee -a "$LOG"
+echo "GPU           : $(nvidia-smi -i 0 --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null)" | tee -a "$LOG"
+echo "max_model_len : $MAX_MODEL_LEN"                                                     | tee -a "$LOG"
+echo "Dataset       : MMLU-pro (40 prompts, no shared prefix — control experiment)"      | tee -a "$LOG"
+echo "Branch        : $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)" | tee -a "$LOG"
 
-# $1 = policy label, $2 = extra server flags
 start_server() {
     local policy=$1
     local extra_flags=$2
-    echo "" | tee -a "$LOG"
-    echo ">>> [$(date +%H:%M:%S)] Starting server: policy=$policy" | tee -a "$LOG"
+    echo ""                                                                   | tee -a "$LOG"
+    echo ">>> [$(date +%H:%M:%S)] Starting server: policy=$policy"           | tee -a "$LOG"
     fuser -k ${PORT}/tcp 2>/dev/null || true
     sleep 2
 
@@ -58,6 +63,8 @@ start_server() {
         --no-enable-dual-pool \
         --no-enable-cost-scoring \
         --no-enable-adaptive-scoring \
+        --max-model-len "$MAX_MODEL_LEN" \
+        --gpu-memory-utilization 0.95 \
         --port $PORT \
         --no-enable-log-requests \
         $extra_flags \
@@ -96,14 +103,14 @@ run_client() {
     $PYTHON jenga_benchmark_serving.py \
         --port "$PORT" \
         --model "$MODEL" \
-        --dataset-path liyucheng/arxiv-march-2023 \
+        --dataset-path "meta-llama/Llama-3.1-405B-evals" \
         --dataset-name hf \
-        --hf-subset ministral \
-        --hf-split train \
+        --hf-subset "llama_31_405b_evals__mmlu_pro__details" \
+        --hf-split "latest" \
         --num-prompts "$NUM_PROMPTS" \
         --seed 55555 \
-        --hf-output-len 150 \
-        --hf-max-len 90000 \
+        --hf-output-len "$HF_OUTPUT_LEN" \
+        --hf-max-len "$HF_MAX_LEN" \
         --ignore-eos \
         --save-result \
         --result-filename "../$out" \
@@ -136,7 +143,7 @@ start_server "Both" "--enable-prefix-aware-scheduling"
 run_client "Both"
 stop_server
 
-echo "" | tee -a "$LOG"
-echo "=== ALL DONE: $(date) ===" | tee -a "$LOG"
-echo "Results in $OUTDIR/" | tee -a "$LOG"
+echo ""                               | tee -a "$LOG"
+echo "=== ALL DONE: $(date) ==="     | tee -a "$LOG"
+echo "Results in $OUTDIR/"           | tee -a "$LOG"
 fuser -k ${PORT}/tcp 2>/dev/null || true
