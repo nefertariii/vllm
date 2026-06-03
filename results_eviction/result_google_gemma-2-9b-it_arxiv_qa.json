@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-05-31T19:15:38.018967",
+  "config": {
+    "model": "google/gemma-2-9b-it",
+    "dataset": "arxiv_qa",
+    "sharegpt_path": null,
+    "num_prompts": 200,
+    "max_tokens": 128,
+    "gpu_memory_utilization": 0.85,
+    "tensor_parallel_size": 1,
+    "seed": 42,
+    "output": "results_eviction/result_google_gemma-2-9b-it_arxiv_qa.json",
+    "policies": [
+      "lru",
+      "dual_pool"
+    ]
+  },
+  "results": [
+    {
+      "policy": "lru",
+      "model": "google/gemma-2-9b-it",
+      "dataset": "arxiv_qa",
+      "num_prompts": 200,
+      "total_time_s": 8.72,
+      "throughput_req_per_s": 22.924,
+      "avg_ttft_ms": -1.0,
+      "cache_hit_rate": -1.0,
+      "total_output_tokens": 0
+    },
+    {
+      "policy": "dual_pool",
+      "model": "google/gemma-2-9b-it",
+      "dataset": "arxiv_qa",
+      "num_prompts": 200,
+      "total_time_s": 9.57,
+      "throughput_req_per_s": 20.894,
+      "avg_ttft_ms": -1.0,
+      "cache_hit_rate": -1.0,
+      "total_output_tokens": 0
+    }
+  ]
+}

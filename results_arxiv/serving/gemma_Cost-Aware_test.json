@@ -1,0 +1,785 @@
+{
+  "timestamp": "2026-06-01T01:15:05.291933",
+  "policy": "Cost-Aware",
+  "model": "google/gemma-2-9b-it",
+  "config": {
+    "num_long": 20,
+    "long_tokens": 5500,
+    "num_short": 8,
+    "short_tokens": 400,
+    "num_questions": 4
+  },
+  "warmup": {
+    "num_requests": 28,
+    "wall_time_s": 31.4,
+    "throughput_req_s": 0.892
+  },
+  "measure": {
+    "num_requests": 84,
+    "wall_time_s": 72.4,
+    "throughput_req_s": 1.16,
+    "long_q2_hit_rate": 0.1852,
+    "short_q2_hit_rate": 0.2451,
+    "long_avg_ttft_ms": 33564.8,
+    "short_avg_ttft_ms": 25065.2,
+    "server_hit_rate": 1.0
+  },
+  "per_request": [
+    {
+      "group": "short",
+      "article_idx": 2,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 3796.644546906464,
+      "e2e_ms": 16480.224822997116
+    },
+    {
+      "group": "long",
+      "article_idx": 10,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 3791.5520269889385,
+      "e2e_ms": 11975.29485996347
+    },
+    {
+      "group": "short",
+      "article_idx": 7,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 1340.3991790255532,
+      "e2e_ms": 7306.052546016872
+    },
+    {
+      "group": "long",
+      "article_idx": 16,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 39529.87843006849,
+      "e2e_ms": 54318.34525510203
+    },
+    {
+      "group": "short",
+      "article_idx": 1,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 3781.4076060894877,
+      "e2e_ms": 16465.60103504453
+    },
+    {
+      "group": "long",
+      "article_idx": 5,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 2626.201768987812,
+      "e2e_ms": 15581.348747946322
+    },
+    {
+      "group": "short",
+      "article_idx": 1,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 400,
+      "ttft_ms": 3776.563358027488,
+      "e2e_ms": 12500.288518960588
+    },
+    {
+      "group": "short",
+      "article_idx": 4,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 4123.903973028064,
+      "e2e_ms": 16797.783534042537
+    },
+    {
+      "group": "short",
+      "article_idx": 5,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 4119.053995003924,
+      "e2e_ms": 16795.75139901135
+    },
+    {
+      "group": "short",
+      "article_idx": 0,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 3775.9665929479524,
+      "e2e_ms": 16458.68960500229
+    },
+    {
+      "group": "long",
+      "article_idx": 10,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 3770.578193012625,
+      "e2e_ms": 16452.77819095645
+    },
+    {
+      "group": "short",
+      "article_idx": 4,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 400,
+      "ttft_ms": 4115.738171036355,
+      "e2e_ms": 16792.118813027628
+    },
+    {
+      "group": "long",
+      "article_idx": 3,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 4112.826973898336,
+      "e2e_ms": 16790.634947945364
+    },
+    {
+      "group": "long",
+      "article_idx": 1,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 5266.265811049379,
+      "e2e_ms": 18010.521005955525
+    },
+    {
+      "group": "long",
+      "article_idx": 15,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 6074.123696074821,
+      "e2e_ms": 18804.30687707849
+    },
+    {
+      "group": "short",
+      "article_idx": 7,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 400,
+      "ttft_ms": 6070.773571031168,
+      "e2e_ms": 18802.861034986563
+    },
+    {
+      "group": "long",
+      "article_idx": 9,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 7272.750769974664,
+      "e2e_ms": 20022.682456066832
+    },
+    {
+      "group": "long",
+      "article_idx": 8,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 7273.771233973093,
+      "e2e_ms": 20021.711958921514
+    },
+    {
+      "group": "long",
+      "article_idx": 8,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 7275.105576962233,
+      "e2e_ms": 20020.5715339398
+    },
+    {
+      "group": "long",
+      "article_idx": 12,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 8477.648727945052,
+      "e2e_ms": 10130.119113018736
+    },
+    {
+      "group": "long",
+      "article_idx": 0,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 10423.36614895612,
+      "e2e_ms": 23311.78920797538
+    },
+    {
+      "group": "long",
+      "article_idx": 10,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 640,
+      "ttft_ms": 9308.053376036696,
+      "e2e_ms": 13027.560743037611
+    },
+    {
+      "group": "long",
+      "article_idx": 7,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 14250.018339022063,
+      "e2e_ms": 29368.68753505405
+    },
+    {
+      "group": "long",
+      "article_idx": 2,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 16777.286745025776,
+      "e2e_ms": 30995.62878103461
+    },
+    {
+      "group": "long",
+      "article_idx": 11,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 17990.4561919393,
+      "e2e_ms": 31226.19723295793
+    },
+    {
+      "group": "long",
+      "article_idx": 19,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 11561.596474028192,
+      "e2e_ms": 24566.411408013664
+    },
+    {
+      "group": "short",
+      "article_idx": 6,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 10413.859408930875,
+      "e2e_ms": 23306.087138014846
+    },
+    {
+      "group": "long",
+      "article_idx": 2,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 17988.69515408296,
+      "e2e_ms": 31224.384624045342
+    },
+    {
+      "group": "long",
+      "article_idx": 17,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 19217.895569978282,
+      "e2e_ms": 32117.831724928692
+    },
+    {
+      "group": "short",
+      "article_idx": 2,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 19214.279404026456,
+      "e2e_ms": 32116.73305206932
+    },
+    {
+      "group": "long",
+      "article_idx": 17,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 19210.644204053096,
+      "e2e_ms": 32115.46429002192
+    },
+    {
+      "group": "short",
+      "article_idx": 1,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 19214.96587106958,
+      "e2e_ms": 26231.450372026302
+    },
+    {
+      "group": "long",
+      "article_idx": 12,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 21653.485439019278,
+      "e2e_ms": 23748.94190300256
+    },
+    {
+      "group": "long",
+      "article_idx": 16,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 20417.60882898234,
+      "e2e_ms": 33349.204387981445
+    },
+    {
+      "group": "long",
+      "article_idx": 13,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 22881.810421939008,
+      "e2e_ms": 35805.6734650163
+    },
+    {
+      "group": "short",
+      "article_idx": 4,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 20418.056973954663,
+      "e2e_ms": 33347.62635291554
+    },
+    {
+      "group": "long",
+      "article_idx": 7,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 21650.787475984544,
+      "e2e_ms": 34572.934648022056
+    },
+    {
+      "group": "long",
+      "article_idx": 19,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 24974.90367910359,
+      "e2e_ms": 37854.71733403392
+    },
+    {
+      "group": "long",
+      "article_idx": 3,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 23733.750532963313,
+      "e2e_ms": 36610.71346292738
+    },
+    {
+      "group": "short",
+      "article_idx": 6,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 24973.60855806619,
+      "e2e_ms": 37852.59007499553
+    },
+    {
+      "group": "long",
+      "article_idx": 9,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 28312.649972969666,
+      "e2e_ms": 41125.23611495271
+    },
+    {
+      "group": "long",
+      "article_idx": 5,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 27472.031440003775,
+      "e2e_ms": 40319.26679390017
+    },
+    {
+      "group": "long",
+      "article_idx": 8,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 26217.896713060327,
+      "e2e_ms": 39077.15894305147
+    },
+    {
+      "group": "long",
+      "article_idx": 2,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 32529.339176951908,
+      "e2e_ms": 48531.44222998526
+    },
+    {
+      "group": "long",
+      "article_idx": 15,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 34971.956228953786,
+      "e2e_ms": 50615.395357017405
+    },
+    {
+      "group": "short",
+      "article_idx": 0,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 33750.269423937425,
+      "e2e_ms": 49446.646102005616
+    },
+    {
+      "group": "short",
+      "article_idx": 0,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 400,
+      "ttft_ms": 34969.82071502134,
+      "e2e_ms": 50614.200872019865
+    },
+    {
+      "group": "long",
+      "article_idx": 4,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 38262.75255403016,
+      "e2e_ms": 53105.929449084215
+    },
+    {
+      "group": "long",
+      "article_idx": 14,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 36193.6952319229,
+      "e2e_ms": 44863.8817910105
+    },
+    {
+      "group": "long",
+      "article_idx": 0,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 33745.34669693094,
+      "e2e_ms": 49443.081509904005
+    },
+    {
+      "group": "long",
+      "article_idx": 1,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 37032.40524895955,
+      "e2e_ms": 52192.8410299588
+    },
+    {
+      "group": "short",
+      "article_idx": 3,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 38256.23384094797,
+      "e2e_ms": 53102.57712798193
+    },
+    {
+      "group": "short",
+      "article_idx": 3,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 400,
+      "ttft_ms": 42798.731227987446,
+      "e2e_ms": 56756.70046999585
+    },
+    {
+      "group": "long",
+      "article_idx": 12,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 40707.591110956855,
+      "e2e_ms": 42353.79503690638
+    },
+    {
+      "group": "long",
+      "article_idx": 7,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 41540.3197320411,
+      "e2e_ms": 55844.95714097284
+    },
+    {
+      "group": "long",
+      "article_idx": 18,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 42790.93651601579,
+      "e2e_ms": 56753.56190092862
+    },
+    {
+      "group": "long",
+      "article_idx": 18,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 42793.48190291785,
+      "e2e_ms": 56752.9841249343
+    },
+    {
+      "group": "long",
+      "article_idx": 13,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 44018.904994940385,
+      "e2e_ms": 57896.61933691241
+    },
+    {
+      "group": "long",
+      "article_idx": 13,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 46210.88177605998,
+      "e2e_ms": 59340.28754802421
+    },
+    {
+      "group": "long",
+      "article_idx": 17,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 52110.501479008235,
+      "e2e_ms": 64420.99587107077
+    },
+    {
+      "group": "long",
+      "article_idx": 6,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 45039.124639937654,
+      "e2e_ms": 58445.49980701413
+    },
+    {
+      "group": "short",
+      "article_idx": 5,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 44014.19474603608,
+      "e2e_ms": 57892.84565101843
+    },
+    {
+      "group": "short",
+      "article_idx": 2,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 44008.91900702845,
+      "e2e_ms": 47158.1711639883
+    },
+    {
+      "group": "short",
+      "article_idx": 3,
+      "question_idx": 3,
+      "prompt_tokens": 408,
+      "cached_tokens": 400,
+      "ttft_ms": 46213.03615695797,
+      "e2e_ms": 59339.358145953156
+    },
+    {
+      "group": "long",
+      "article_idx": 5,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 46209.385741036385,
+      "e2e_ms": 59338.917874963954
+    },
+    {
+      "group": "long",
+      "article_idx": 19,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 53428.13411401585,
+      "e2e_ms": 65696.90533110406
+    },
+    {
+      "group": "long",
+      "article_idx": 1,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 54592.76982105803,
+      "e2e_ms": 66575.31826302875
+    },
+    {
+      "group": "long",
+      "article_idx": 11,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 62038.03500998765,
+      "e2e_ms": 70163.81475306116
+    },
+    {
+      "group": "long",
+      "article_idx": 14,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 49762.03128602356,
+      "e2e_ms": 63970.539488014765
+    },
+    {
+      "group": "long",
+      "article_idx": 15,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 57073.7890410237,
+      "e2e_ms": 69281.11209906638
+    },
+    {
+      "group": "long",
+      "article_idx": 4,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 50940.814757021144,
+      "e2e_ms": 64189.544793916866
+    },
+    {
+      "group": "long",
+      "article_idx": 16,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 58306.95732100867,
+      "e2e_ms": 69482.03808499966
+    },
+    {
+      "group": "long",
+      "article_idx": 3,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 55754.40931308549,
+      "e2e_ms": 67708.67190102581
+    },
+    {
+      "group": "long",
+      "article_idx": 4,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 58308.70172404684,
+      "e2e_ms": 69480.91011005454
+    },
+    {
+      "group": "short",
+      "article_idx": 6,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 58309.44943393115,
+      "e2e_ms": 63153.427310986444
+    },
+    {
+      "group": "long",
+      "article_idx": 9,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 60904.08852905966,
+      "e2e_ms": 70008.5778159555
+    },
+    {
+      "group": "long",
+      "article_idx": 6,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 59674.94784400333,
+      "e2e_ms": 69839.01390305255
+    },
+    {
+      "group": "short",
+      "article_idx": 7,
+      "question_idx": 2,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 60905.78346303664,
+      "e2e_ms": 70007.4038481107
+    },
+    {
+      "group": "long",
+      "article_idx": 14,
+      "question_idx": 2,
+      "prompt_tokens": 5508,
+      "cached_tokens": 5488,
+      "ttft_ms": 59668.74648304656,
+      "e2e_ms": 69837.06453500781
+    },
+    {
+      "group": "long",
+      "article_idx": 18,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 65621.34072603658,
+      "e2e_ms": 71839.27276707254
+    },
+    {
+      "group": "long",
+      "article_idx": 6,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 66902.30067598168,
+      "e2e_ms": 72061.22698495165
+    },
+    {
+      "group": "long",
+      "article_idx": 0,
+      "question_idx": 1,
+      "prompt_tokens": 5508,
+      "cached_tokens": 0,
+      "ttft_ms": 68035.4718780145,
+      "e2e_ms": 72188.99346794933
+    },
+    {
+      "group": "long",
+      "article_idx": 11,
+      "question_idx": 3,
+      "prompt_tokens": 5508,
+      "cached_tokens": 192,
+      "ttft_ms": 69205.48390201293,
+      "e2e_ms": 72313.04734095465
+    },
+    {
+      "group": "short",
+      "article_idx": 5,
+      "question_idx": 1,
+      "prompt_tokens": 408,
+      "cached_tokens": 0,
+      "ttft_ms": 69203.78221105784,
+      "e2e_ms": 72312.51991097815
+    }
+  ]
+}

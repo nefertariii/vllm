@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-05-31T19:08:59.323945",
+  "config": {
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "dataset": "arxiv_qa",
+    "sharegpt_path": null,
+    "num_prompts": 10,
+    "max_tokens": 64,
+    "gpu_memory_utilization": 0.85,
+    "tensor_parallel_size": 1,
+    "seed": 42,
+    "output": null,
+    "policies": [
+      "lru",
+      "dual_pool"
+    ]
+  },
+  "results": [
+    {
+      "policy": "lru",
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "dataset": "arxiv_qa",
+      "num_prompts": 10,
+      "total_time_s": 2.17,
+      "throughput_req_per_s": 4.602,
+      "avg_ttft_ms": -1.0,
+      "cache_hit_rate": -1.0,
+      "total_output_tokens": 0
+    },
+    {
+      "policy": "dual_pool",
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "dataset": "arxiv_qa",
+      "num_prompts": 10,
+      "total_time_s": 2.23,
+      "throughput_req_per_s": 4.477,
+      "avg_ttft_ms": -1.0,
+      "cache_hit_rate": -1.0,
+      "total_output_tokens": 0
+    }
+  ]
+}
