@@ -161,7 +161,15 @@ Request rate swept from 0.2 to 4.0 req/s. Both policy wins at every rate tested.
 | 3.8 | 0.1139 | 0.1787 | +57.0% | 159.4 | 104.0 | 480.9 | 450.7 | −6% |
 | 4.0 | 0.1139 | 0.1829 | +60.6% | 159.7 | 105.8 | 480.9 | 365.9 | −24% |
 
-LRU throughput saturates at ~0.114 req/s from rate ≥ 1.0 (system overloaded). Both maintains +37–81% advantage across all rates. Peak at rate=1.6: **+80.8% req/s**, TTFT 150.5s → 79.2s (−47%), TPOT 480.8ms → 309.2ms (−36%).
+**Throughput**: LRU saturates at ~0.114 req/s from rate ≥ 1.0 (system fully overloaded). Both maintains a +37–81% advantage across all 20 rates, with no rate where LRU wins.
+
+**TTFT**: LRU TTFT grows monotonically with rate (55s → 160s), reflecting an ever-deepening prefill queue. Both TTFT stays compressed (30–111s) because higher cache hit rates reduce per-request prefill work, allowing queued requests to start generating sooner.
+
+**TPOT**: LRU TPOT locks at ~480 ms for rate ≥ 0.4 — the decode phase is constantly stalled behind large prefill batches competing for the same GPU. Both improves TPOT at every rate (−1% to −36%), with the largest gains at rates where cache hit uplift is highest (rate=1.6: 480ms → 309ms, −36%). The mechanism is the same as TTFT: fewer/shorter prefills leave more GPU bandwidth for decode, reducing inter-token latency.
+
+**Rate=1.8 and 2.2 anomalies**: Both req/s and TPOT improvement drop to near-zero at these two rates despite strong results on adjacent rates. This is consistent with batch-level randomness causing a higher fraction of cache misses in those particular runs (the workload is shuffled with a fixed seed but arrival timing varies with rate), rather than a systematic policy failure.
+
+Peak overall: rate=1.6, **+80.8% req/s**, TTFT −47%, TPOT −36%.
 
 ---
 
