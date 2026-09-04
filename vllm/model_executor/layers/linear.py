@@ -55,13 +55,10 @@ WEIGHT_LOADER_V2_SUPPORTED = [
     "AutoGPTQLinearMethod",
     "Fp8LinearMethod",
     "FBGEMMFp8LinearMethod",
-    "ModelOptFp8LinearMethod",
-    "ModelOptFp8PcPtLinearMethod",
-    "ModelOptFp8PbWoLinearMethod",
     "QuarkLinearMethod",
-    "ModelOptNvFp4LinearMethod",
-    "ModelOptNvFp4W4A16LinearMethod",
     "HummingLinearMethod",
+    # ModelOptLinearMethod self-registers via
+    # register_weight_loader_v2_supported_method (see modelopt.py).
 ]
 
 
@@ -166,6 +163,8 @@ class LinearMethodBase(QuantizeMethodBase):
 class UnquantizedLinearMethod(LinearMethodBase):
     """Linear method without quantization."""
 
+    supports_pre_processed_weights = True
+
     def __init__(self) -> None:
         config = get_current_vllm_config_or_none()
         linear_backend = (
@@ -231,7 +230,9 @@ class UnquantizedLinearMethod(LinearMethodBase):
         x: torch.Tensor,
         bias: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        if envs.VLLM_BATCH_INVARIANT and current_platform.is_cuda_alike():
+        if envs.VLLM_BATCH_INVARIANT and (
+            current_platform.is_cuda_alike() or current_platform.is_xpu()
+        ):
             return linear_batch_invariant(x, layer.weight, bias)
         return self._gemm_impl(layer, x, layer.weight, bias)
 
